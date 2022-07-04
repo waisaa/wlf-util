@@ -4,7 +4,7 @@
 
 *Common utils for python.*
 
-[![](https://img.shields.io/badge/pypi-v0.1.0-9cf.svg)](https://pypi.org/project/wlfutil/) [![](https://img.shields.io/badge/blog-@waisaa-blue.svg)](https://blog.csdn.net/qq_42761569?type=blog) [![](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://github.com/waisaa/wlf-util/blob/main/LICENSE)
+[![](https://img.shields.io/badge/pypi-latest-9cf.svg)](https://pypi.org/project/wlfutil/) [![](https://img.shields.io/badge/blog-@waisaa-blue.svg)](https://blog.csdn.net/qq_42761569?type=blog) [![](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://github.com/waisaa/wlf-util/blob/main/LICENSE)
 
 </div>
 
