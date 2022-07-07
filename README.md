@@ -32,9 +32,9 @@ pip3 install wlfutil
 ## Quickuse
 ```python3
 # 引入所有工具类
-#from wlfutil import *
+#from wlfutil.all import *
 # 引入指定的
-from wlfutil import LogUtil, FileUtil
+from wlfutil.all import LogUtil, FileUtil
 
 log_file = 'test/run.log'
 FileUtil.del_dir_or_file(log_file)

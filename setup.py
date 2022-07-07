@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 # 版本信息
-VNU = 4
+VNU = 0
 VERSION = f'1.0.{VNU}'
 README = ''
 with open("README.md", "r", encoding="utf-8") as fh:
