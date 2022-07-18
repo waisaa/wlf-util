@@ -141,7 +141,7 @@ class FileUtil:
     """目录、文件操作工具类"""
 
     @staticmethod
-    def create_dir_if_not_exist(dst_dir):
+    def create_dir_if_not_exist(dst_dir: str):
         """创建目录，不存在则创建，存在无操作
         :param dst_dir 要创建的目录
         """
@@ -149,7 +149,7 @@ class FileUtil:
             os.makedirs(dst_dir)
 
     @staticmethod
-    def del_dir_or_file(dst_fd):
+    def del_dir_or_file(dst_fd: str):
         """删除文件或目录
         :param src_fd 要删除的目录或文件
         """
@@ -159,7 +159,7 @@ class FileUtil:
             os.remove(dst_fd)
 
     @staticmethod
-    def get_file_size(filepath):
+    def get_file_size(filepath: str):
         """获取文件或文件夹的大小
         注意：TB级别以及超过TB的数据就别用了，需要考虑性能了
         """
@@ -187,7 +187,7 @@ class FileUtil:
         return res
 
     @staticmethod
-    def clear_dir(filepath):
+    def clear_dir(filepath: str):
         """清空文件夹下的所有文件，先删除文件夹再创建"""
         if not os.path.exists(filepath):
             os.mkdir(filepath)
@@ -214,7 +214,7 @@ class DtUtil:
         locale.setlocale(locale.LC_CTYPE, 'chinese')
 
     @staticmethod
-    def convert_date_str_format(src_dt_str, src_df=DF_STD_SEC, dst_df=DF_CHN_DAY):
+    def convert_date_str_format(src_dt_str: str, src_df: str = DF_STD_SEC, dst_df: str = DF_CHN_DAY):
         """把日期字符串格式化成其他格式的日期字符串
         @param src_dt_str:源日期字符串
         @param src_df:源日期字符串格式
@@ -223,7 +223,7 @@ class DtUtil:
         return dt.datetime.strftime(dt.datetime.strptime(src_dt_str, src_df), dst_df)
 
     @staticmethod
-    def convert_date_to_str(src_dt=dt.datetime.now(), dst_df=DF_STD_SEC):
+    def convert_date_to_str(src_dt: dt.datetime = dt.datetime.now(), dst_df: str = DF_STD_SEC):
         """把日期式化成其他格式的日期字符串
         @param src_dt:源日期
         @param dst_df:目标日期字符串格式
@@ -231,7 +231,7 @@ class DtUtil:
         return dt.datetime.strftime(src_dt, dst_df)
 
     @staticmethod
-    def convert_str_to_date(src_dt_str, src_df=DF_STD_SEC):
+    def convert_str_to_date(src_dt_str: str, src_df: str = DF_STD_SEC):
         """把日期字符串格式化成日期
         @param src_dt_str:源日期字符串
         @param src_df:源日期字符串格式
@@ -242,7 +242,7 @@ class DtUtil:
         return res
 
     @staticmethod
-    def shift_date(src_dt=dt.datetime.now(), mon=0, day=0, sec=0):
+    def shift_date(src_dt: dt.datetime = dt.datetime.now(), mon: int = 0, day: int = 0, sec: int = 0):
         """获取今天日期，根据传入的偏移量偏移
         @param mon:今天日期按月偏移量
         @param day:今天日期按日偏移量
@@ -251,7 +251,7 @@ class DtUtil:
         return src_dt + relativedelta(months=mon) + relativedelta(days=day) + relativedelta(seconds=sec)
 
     @staticmethod
-    def diff_secs_between_two_date_str(src_dt_str1, src_dt_str2, src_df=DF_STD_SEC):
+    def diff_secs_between_two_date_str(src_dt_str1: str, src_dt_str2: str, src_df: str = DF_STD_SEC):
         """获取两个日期字符串的时间差，单位秒
         @param src_dt_str1:日期字符串
         @param src_dt_str2:日期字符串
@@ -263,7 +263,7 @@ class DtUtil:
         return int(ts2 - ts1)
 
     @staticmethod
-    def diff_days_between_two_date_str(src_dt_str1, src_dt_str2, src_df=DF_STD_SEC):
+    def diff_days_between_two_date_str(src_dt_str1: str, src_dt_str2: str, src_df: str = DF_STD_SEC):
         """获取两个日期字符串的时间差，单位天
         @param src_dt_str1:日期字符串
         @param src_dt_str2:日期字符串
@@ -273,7 +273,7 @@ class DtUtil:
         return (DtUtil.convert_str_to_date(src_dt_str2, src_df) - DtUtil.convert_str_to_date(src_dt_str1, src_df)).days
 
     @staticmethod
-    def day_start_of_date_str(src_dt_str, src_df=DF_STD_SEC):
+    def day_start_of_date_str(src_dt_str: str, src_df: str = DF_STD_SEC):
         """获取某一天的起始时间
         @param src_dt_str:日期字符串
         @param src_df:源日期字符串格式
@@ -283,7 +283,7 @@ class DtUtil:
         return DtUtil.convert_str_to_date(DtUtil.convert_date_to_str(d1, DtUtil.DF_STD_DAY), DtUtil.DF_STD_DAY)
 
     @staticmethod
-    def day_end_of_date_str(src_dt_str, src_df=DF_STD_SEC):
+    def day_end_of_date_str(src_dt_str: str, src_df: str = DF_STD_SEC):
         """获取某一天的结束时间，即第二天的开始时间
         @param src_dt_str:源日期字符串
         @param src_df:源日期字符串格式
@@ -293,7 +293,7 @@ class DtUtil:
         return DtUtil.convert_str_to_date(DtUtil.convert_date_to_str(d1, DtUtil.DF_STD_DAY), DtUtil.DF_STD_DAY)
 
     @staticmethod
-    def over_shift(src_dt1, src_dt2, shift=60):
+    def over_shift(src_dt1: dt.datetime, src_dt2: dt.datetime, shift: int = 60):
         """判断两个时间是否相差是否超过偏移量
         @param src_dt1:源日期
         @param src_dt2:源日期
@@ -303,7 +303,7 @@ class DtUtil:
         return abs((src_dt1 - src_dt2).total_seconds()) > shift
 
     @staticmethod
-    def get_date_of_min(src_dt_str):
+    def get_date_of_min(src_dt_str: str):
         """获取当前时间自定义格式-分钟级时间
         @param src_dt_str:源日期字符串
         """
@@ -327,13 +327,12 @@ class LogUtil:
     console_handler, file_handler = None, None
 
     @classmethod
-    def init(cls, logname, console=False):
+    def init(cls, logname: str, console: bool = False):
         """使用前需要初始化，输入生成的日志文件名
         注意：默认按天生成日志，且保留最近一周的日志文件
         """
         if not cls.logger:
             pdir = '/'.join(logname.split('/')[:-1])
-            FileUtil.create_dir_if_not_exist(pdir)
             if pdir:
                 FileUtil.create_dir_if_not_exist(pdir)
             cls.logger = logging.getLogger(logname)
@@ -366,7 +365,7 @@ class LogUtil:
         cls.logger.removeHandler(cls.file_handler)
 
     @classmethod
-    def debug(cls, title=None, *msg):
+    def debug(cls, title: str = None, *msg):
         cls.open()
         lastframe = currentframe().f_back
         filepath = lastframe.f_code.co_filename
@@ -380,7 +379,7 @@ class LogUtil:
         cls.close()
 
     @classmethod
-    def info(cls, title=None, *msg):
+    def info(cls, title: str = None, *msg):
         cls.open()
         lastframe = currentframe().f_back
         filepath = lastframe.f_code.co_filename
@@ -395,7 +394,7 @@ class LogUtil:
         cls.close()
 
     @classmethod
-    def warn(cls, title=None, *msg):
+    def warn(cls, title: str = None, *msg):
         cls.open()
         lastframe = currentframe().f_back
         filepath = lastframe.f_code.co_filename
@@ -410,7 +409,7 @@ class LogUtil:
         cls.close()
 
     @classmethod
-    def error(cls, title=None, *msg):
+    def error(cls, title: str = None, *msg):
         cls.open()
         lastframe = currentframe().f_back
         filepath = lastframe.f_code.co_filename
@@ -425,7 +424,7 @@ class LogUtil:
         cls.close()
 
     @classmethod
-    def critical(cls, title=None, *msg):
+    def critical(cls, title: str = None, *msg):
         cls.open()
         lastframe = currentframe().f_back
         filepath = lastframe.f_code.co_filename
@@ -455,7 +454,7 @@ class InfluxUtil:
     CONN = None
 
     @classmethod
-    def _init(cls, conf):
+    def _init(cls, conf: dict):
         if not cls.CONN:
             try:
                 cls.CONN = InfluxDBClient(**conf)
@@ -463,13 +462,13 @@ class InfluxUtil:
                 LogUtil.error("influxdb connect failed, please check the config", e)
 
     @classmethod
-    def exec_sql(cls, conf, sql):
+    def exec_sql(cls, conf: dict, sql: str):
         """执行influxdb查询sql"""
         cls._init(conf)
         return list(cls.CONN.query(sql).get_points())
 
     @classmethod
-    def write_data(cls, conf, tbl, data_list):
+    def write_data(cls, conf: dict, tbl: str, data_list: list):
         """向influxdb写入数据
         :data_list 格式：[(time, tid, v1, v2, ...), ...]
         """
@@ -491,7 +490,7 @@ class InfluxUtil:
         cls.CONN.write_points(json_data_list)
 
     @classmethod
-    def create_db(cls, conf, db_name):
+    def create_db(cls, conf: dict, db_name: str):
         cls._init(conf)
         cls.CONN.create_database(db_name)
 
@@ -510,7 +509,7 @@ class MysqlUtil:
     CONN = None
 
     @classmethod
-    def _init(cls, conf):
+    def _init(cls, conf: dict):
         if cls.CONN is None:
             cls.connect(conf)
         else:
@@ -520,14 +519,14 @@ class MysqlUtil:
                 cls.connect(conf)
 
     @classmethod
-    def connect(cls, conf):
+    def connect(cls, conf: dict):
         try:
             cls.CONN = pymysql.connect(**conf)
         except Exception as e:
             LogUtil.error("mysql init failed, please check the config", e)
 
     @classmethod
-    def get(cls, conf, sql):
+    def get(cls, conf: dict, sql: str):
         cls._init(conf)
         res = None
         cursor = cls.CONN.cursor()
@@ -537,7 +536,7 @@ class MysqlUtil:
         return res
 
     @classmethod
-    def save(cls, conf, sql):
+    def save(cls, conf: dict, sql: str):
         cls._init(conf)
         cursor = cls.CONN.cursor()
         cursor.execute(sql)
@@ -559,12 +558,12 @@ class ShellUtil:
     CONN = None
 
     @classmethod
-    def _init(cls, conf):
+    def _init(cls, conf: dict):
         if cls.CONN is None:
             cls.connect(conf)
 
     @classmethod
-    def connect(cls, conf):
+    def connect(cls, conf: dict):
         try:
             cls.CONN = paramiko.SSHClient()
             cls.CONN.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -573,7 +572,7 @@ class ShellUtil:
             LogUtil.error("shell init failed, please check the config", e)
 
     @classmethod
-    def exec(cls, conf, cmd):
+    def exec(cls, conf: dict, cmd: str):
         cls._init(conf)
         stdin, stdout, stderr = cls.CONN.exec_command(cmd, get_pty=True)
         cls.CONN.close()
@@ -600,19 +599,19 @@ class MinioUtil:
     POLICY = '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"AWS":["*"]},"Action":["s3:GetBucketLocation","s3:ListBucket"],"Resource":["arn:aws:s3:::%s"]},{"Effect":"Allow","Principal":{"AWS":["*"]},"Action":["s3:GetObject"],"Resource":["arn:aws:s3:::%s/*"]}]}'
 
     @classmethod
-    def _init(cls, conf):
+    def _init(cls, conf: dict):
         if cls.CONN is None:
             cls.connect(conf)
 
     @classmethod
-    def connect(cls, conf):
+    def connect(cls, conf: dict):
         try:
             cls.CONN = minio.Minio(**conf)
         except Exception as e:
             LogUtil.error("minio init failed, please check the config", e)
 
     @classmethod
-    def upload(cls, conf, bucket, filepath, filename):
+    def upload(cls, conf: dict, bucket: str, filepath: str, filename: str):
         """上传文件，返回文件的下载地址"""
         cls._init(conf)
         endpoint = conf['endpoint']
@@ -621,7 +620,7 @@ class MinioUtil:
         return f'{download_url}/{bucket}/{filename}'
 
     @classmethod
-    def exists_bucket(cls, conf, bucket):
+    def exists_bucket(cls, conf: dict, bucket: str):
         """
         判断桶是否存在
         :param bucket_name: 桶名称
@@ -649,7 +648,7 @@ class MinioUtil:
         return True
 
     @classmethod
-    def download(cls, conf, bucket, filepath, filename):
+    def download(cls, conf: dict, bucket: str, filepath: str, filename: str):
         """下载保存文件保存本地
         :param bucket:
         :param filepath:
@@ -674,12 +673,12 @@ class RedisUtil:
     CONN = None
 
     @classmethod
-    def _init(cls, conf):
+    def _init(cls, conf: dict):
         if cls.CONN is None:
             cls.connect(conf)
 
     @classmethod
-    def connect(cls, conf):
+    def connect(cls, conf: dict):
         try:
             pool = redis.ConnectionPool(**conf)
             cls.CONN = redis.Redis(connection_pool=pool)
@@ -687,31 +686,31 @@ class RedisUtil:
             LogUtil.error("redis init failed, please check the config", e)
 
     @classmethod
-    def exist(cls, key):
+    def exist(cls, key: str):
         """判断key是否存在
         """
         return cls.CONN.exists(key)
 
     @classmethod
-    def get(cls, key):
+    def get(cls, key: str):
         """字符串获取值
         """
         return cls.CONN.get(key)
 
     @classmethod
-    def set(cls, key, val):
+    def set(cls, key: str, val: str):
         """字符串设置值
         """
         cls.CONN.set(key, val)
 
     @classmethod
-    def lget(cls, key):
+    def lget(cls, key: str):
         """列表获取值
         """
         cls.CONN.lrange(key, 0, -1)
 
     @classmethod
-    def lset(cls, key, vals: tuple):
+    def lset(cls, key: dict, vals: tuple):
         """列表设置值
         """
         cls.CONN.lpush(key, vals)
