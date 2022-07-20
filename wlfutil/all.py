@@ -17,10 +17,19 @@ import pymysql
 import paramiko
 import minio
 import redis
+import uuid
 
 
 class UniUtil:
     """统一处理工具类"""
+
+    @staticmethod
+    def get_uuid(params: dict):
+        """基于名字的MD5散列值，同一命名空间的同一名字生成相同的uuid"""
+        p1 = sorted(params.items(), key=lambda x: x[0])
+        p2 = [str(p) for p in p1]
+        p3 = '|'.join(p2)
+        return str(uuid.uuid3(uuid.NAMESPACE_OID, p3))
 
     @staticmethod
     def time_cost(fn):
@@ -200,6 +209,7 @@ class DtUtil:
     """日期格式化工具类"""
 
     # 日期格式
+    DF_STD_MIC = '%Y-%m-%d %H:%M:%S.%f'
     DF_STD_SEC = '%Y-%m-%d %H:%M:%S'
     DF_STD_DAY = '%Y-%m-%d'
     DF_TRIM_DAY = '%Y%m%d'
@@ -208,6 +218,13 @@ class DtUtil:
     DF_CHN_MON = '%Y年%m月'
     DF_CUS_MIN = '%Y_%m%d_%H%M'
     DF_INFLUX = '%Y-%m-%dT%H:%M:%SZ'
+
+    # 日期单位
+    DU_SEC = 'sec'
+    DU_MIN = 'min'
+    DU_HOUR = 'hour'
+    DU_DAY = 'day'
+    DU_YEAR = 'year'
 
     # windows 环境下需要配置
     if UniUtil.get_os() == 'Windows':
@@ -251,8 +268,8 @@ class DtUtil:
         return src_dt + relativedelta(months=mon) + relativedelta(days=day) + relativedelta(seconds=sec)
 
     @staticmethod
-    def diff_secs_between_two_date_str(src_dt_str1: str, src_dt_str2: str, src_df: str = DF_STD_SEC):
-        """获取两个日期字符串的时间差，单位秒
+    def diff_time(src_dt_str1: str, src_dt_str2: str, src_df: str = DF_STD_SEC, diff_unit=DU_SEC):
+        """获取两个日期字符串的时间差，默认单位秒
         @param src_dt_str1:日期字符串
         @param src_dt_str2:日期字符串
         @param src_df:源日期字符串格式
@@ -260,17 +277,17 @@ class DtUtil:
         """
         ts1 = DtUtil.convert_str_to_date(src_dt_str1, src_df).timestamp()
         ts2 = DtUtil.convert_str_to_date(src_dt_str2, src_df).timestamp()
-        return int(ts2 - ts1)
-
-    @staticmethod
-    def diff_days_between_two_date_str(src_dt_str1: str, src_dt_str2: str, src_df: str = DF_STD_SEC):
-        """获取两个日期字符串的时间差，单位天
-        @param src_dt_str1:日期字符串
-        @param src_dt_str2:日期字符串
-        @param src_df:源日期字符串格式
-        @return 正值代表第二个比第一个晚几天，负值则相反
-        """
-        return (DtUtil.convert_str_to_date(src_dt_str2, src_df) - DtUtil.convert_str_to_date(src_dt_str1, src_df)).days
+        diff_secs = int(ts2 - ts1)
+        if diff_unit == DtUtil.DU_SEC:
+            return diff_secs
+        elif diff_unit == DtUtil.DU_MIN:
+            return round(diff_secs / 60, 1)
+        elif diff_unit == DtUtil.DU_HOUR:
+            return round(diff_secs / (60 * 60), 1)
+        elif diff_unit == DtUtil.DU_DAY:
+            return round(diff_secs / (60 * 60 * 24), 1)
+        elif diff_unit == DtUtil.DU_YEAR:
+            return round(diff_secs / (60 * 60 * 24 * 365), 1)
 
     @staticmethod
     def day_start_of_date_str(src_dt_str: str, src_df: str = DF_STD_SEC):
@@ -452,14 +469,22 @@ class InfluxUtil:
     """
     TZ = "tz('Asia/Shanghai')"
     CONN = None
+    CFID = None
 
     @classmethod
     def _init(cls, conf: dict):
-        if not cls.CONN:
-            try:
-                cls.CONN = InfluxDBClient(**conf)
-            except Exception as e:
-                LogUtil.error("influxdb connect failed, please check the config", e)
+        if cls.CONN is None:
+            cls.connect(conf)
+        elif cls.CFID != UniUtil.get_uuid(conf):
+            cls.connect(conf)
+
+    @classmethod
+    def connect(cls, conf: dict):
+        try:
+            cls.CONN = InfluxDBClient(**conf)
+            cls.CFID = UniUtil.get_uuid(conf)
+        except Exception as e:
+            LogUtil.error("influxdb init failed, please check the config", e)
 
     @classmethod
     def exec_sql(cls, conf: dict, sql: str):
@@ -490,6 +515,21 @@ class InfluxUtil:
         cls.CONN.write_points(json_data_list)
 
     @classmethod
+    def write_points(cls, conf: dict, json_data_list: list):
+        """向influxdb写入数据
+        :json_data_list 格式：[{
+            'measurement': 'tbl',
+            'time': time.replace(' ', 'T') + '+08:00',
+            'tags': {
+                'k': 'v'
+            },
+            'fields': {'k': 'v'},
+        }, ...]
+        """
+        cls._init(conf)
+        cls.CONN.write_points(json_data_list)
+
+    @classmethod
     def create_db(cls, conf: dict, db_name: str):
         cls._init(conf)
         cls.CONN.create_database(db_name)
@@ -507,10 +547,13 @@ class MysqlUtil:
     }
     """
     CONN = None
+    CFID = None
 
     @classmethod
     def _init(cls, conf: dict):
         if cls.CONN is None:
+            cls.connect(conf)
+        elif cls.CFID != UniUtil.get_uuid(conf):
             cls.connect(conf)
         else:
             try:
@@ -522,6 +565,7 @@ class MysqlUtil:
     def connect(cls, conf: dict):
         try:
             cls.CONN = pymysql.connect(**conf)
+            cls.CFID = UniUtil.get_uuid(conf)
         except Exception as e:
             LogUtil.error("mysql init failed, please check the config", e)
 
@@ -548,7 +592,7 @@ class ShellUtil:
     """远程连接服务器执行命令工具类型
 
     conf = {
-        'host': '110.110.110.110',
+        'hostname': '110.110.110.110',
         'port': 22,
         'username': 'admin',
         'password': '123456',
@@ -556,10 +600,13 @@ class ShellUtil:
     }
     """
     CONN = None
+    CFID = None
 
     @classmethod
     def _init(cls, conf: dict):
         if cls.CONN is None:
+            cls.connect(conf)
+        elif cls.CFID != UniUtil.get_uuid(conf):
             cls.connect(conf)
 
     @classmethod
@@ -568,6 +615,7 @@ class ShellUtil:
             cls.CONN = paramiko.SSHClient()
             cls.CONN.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             cls.CONN.connect(**conf)
+            cls.CFID = UniUtil.get_uuid(conf)
         except Exception as e:
             LogUtil.error("shell init failed, please check the config", e)
 
@@ -596,17 +644,21 @@ class MinioUtil:
     }
     """
     CONN = None
+    CFID = None
     POLICY = '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"AWS":["*"]},"Action":["s3:GetBucketLocation","s3:ListBucket"],"Resource":["arn:aws:s3:::%s"]},{"Effect":"Allow","Principal":{"AWS":["*"]},"Action":["s3:GetObject"],"Resource":["arn:aws:s3:::%s/*"]}]}'
 
     @classmethod
     def _init(cls, conf: dict):
         if cls.CONN is None:
             cls.connect(conf)
+        elif cls.CFID != UniUtil.get_uuid(conf):
+            cls.connect(conf)
 
     @classmethod
     def connect(cls, conf: dict):
         try:
             cls.CONN = minio.Minio(**conf)
+            cls.CFID = UniUtil.get_uuid(conf)
         except Exception as e:
             LogUtil.error("minio init failed, please check the config", e)
 
@@ -671,10 +723,13 @@ class RedisUtil:
     }
     """
     CONN = None
+    CFID = None
 
     @classmethod
     def _init(cls, conf: dict):
         if cls.CONN is None:
+            cls.connect(conf)
+        elif cls.CFID != UniUtil.get_uuid(conf):
             cls.connect(conf)
 
     @classmethod
@@ -682,6 +737,7 @@ class RedisUtil:
         try:
             pool = redis.ConnectionPool(**conf)
             cls.CONN = redis.Redis(connection_pool=pool)
+            cls.CFID = UniUtil.get_uuid(conf)
         except Exception as e:
             LogUtil.error("redis init failed, please check the config", e)
 
