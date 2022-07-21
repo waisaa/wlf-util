@@ -12,7 +12,6 @@ from inspect import currentframe
 import time
 import locale
 import platform
-from numpy import array
 import pymysql
 import paramiko
 import minio
